@@ -7,27 +7,44 @@ services:
       MYSQL_DATABASE: eventfulfill
       MYSQL_USER: eventfulfill
       MYSQL_PASSWORD: ${EVENT_DB_PASSWORD:?Run init-local first}
-    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
-    ports: ["127.0.0.1:13406:3306"]
+    command:
+    - --character-set-server=utf8mb4
+    - --collation-server=utf8mb4_0900_ai_ci
+    ports:
+    - 127.0.0.1:13406:3306
     volumes:
-      - event_mysql:/var/lib/mysql
-      - ./mysql/01-test-database.sql:/docker-entrypoint-initdb.d/01-test-database.sql:ro
+    - event_mysql:/var/lib/mysql
+    - ./mysql/01-test-database.sql:/docker-entrypoint-initdb.d/01-test-database.sql:ro
     mem_limit: 640m
     cpus: 1.5
     healthcheck:
-      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysqladmin ping -h 127.0.0.1 --silent"]
+      test:
+      - CMD-SHELL
+      - MYSQL_PWD=$$MYSQL_ROOT_PASSWORD mysqladmin ping -h 127.0.0.1 --silent
       interval: 5s
       timeout: 5s
       retries: 35
   redis:
     image: redis:7.4.2-alpine
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
-    ports: ["127.0.0.1:16379:6379"]
-    volumes: ["event_redis:/data"]
+    command:
+    - redis-server
+    - --appendonly
+    - 'yes'
+    - --maxmemory
+    - 128mb
+    - --maxmemory-policy
+    - allkeys-lru
+    ports:
+    - 127.0.0.1:16379:6379
+    volumes:
+    - event_redis:/data
     mem_limit: 192m
     cpus: 0.5
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+      - CMD
+      - redis-cli
+      - ping
       interval: 5s
       retries: 20
   namesrv:
@@ -35,73 +52,38 @@ services:
     command: sh mqnamesrv
     environment:
       JAVA_OPT_EXT: -Xms128m -Xmx128m -Xmn64m
-    ports: ["127.0.0.1:19876:9876"]
+    ports:
+    - 127.0.0.1:19876:9876
     mem_limit: 256m
   broker-init:
     image: apache/rocketmq:5.3.2
-    user: '0:0'
-    command: ["sh", "-c", "mkdir -p /home/rocketmq/store/config && chown -R rocketmq:rocketmq /home/rocketmq/store"]
-    volumes: ["event_mq:/home/rocketmq/store"]
+    user: 0:0
+    command:
+    - sh
+    - -c
+    - mkdir -p /home/rocketmq/store/config && chown -R rocketmq:rocketmq /home/rocketmq/store
+    volumes:
+    - event_mq:/home/rocketmq/store
     mem_limit: 64m
   broker:
     image: apache/rocketmq:5.3.2
     command: sh mqbroker -n namesrv:9876 -c /home/rocketmq/broker.conf
     environment:
       JAVA_OPT_EXT: -Xms256m -Xmx256m -Xmn128m -XX:MaxDirectMemorySize=128m
-    ports: ["127.0.0.1:10911:10911", "127.0.0.1:10909:10909", "127.0.0.1:10912:10912"]
+    ports:
+    - 127.0.0.1:10911:10911
+    - 127.0.0.1:10909:10909
+    - 127.0.0.1:10912:10912
     volumes:
-      - ./rocketmq/broker.conf:/home/rocketmq/broker.conf:ro
-      - event_mq:/home/rocketmq/store
+    - ./rocketmq/broker.conf:/home/rocketmq/broker.conf:ro
+    - event_mq:/home/rocketmq/store
     depends_on:
       namesrv:
         condition: service_started
       broker-init:
         condition: service_completed_successfully
     mem_limit: 640m
-  postgres:
-    image: postgres:17.4-alpine
-    profiles: [agent]
-    environment:
-      POSTGRES_USER: repoagent
-      POSTGRES_PASSWORD: ${AGENT_CHECKPOINT_PASSWORD:?Run init-local first}
-      POSTGRES_DB: repoagent
-    ports: ["127.0.0.1:15432:5432"]
-    volumes: ["agent_postgres:/var/lib/postgresql/data"]
-    mem_limit: 256m
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U repoagent"]
-      interval: 5s
-      retries: 30
-  elasticsearch:
-    image: elasticsearch:8.19.23
-    profiles: [search]
-    environment:
-      discovery.type: single-node
-      xpack.security.enabled: 'false'
-      xpack.ml.enabled: 'false'
-      node.store.allow_mmap: 'false'
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-    ports: ["127.0.0.1:19200:9200"]
-    volumes: ["agent_search:/usr/share/elasticsearch/data"]
-    mem_limit: 1200m
-  objectstore:
-    image: rustfs/rustfs:1.0.4
-    profiles: [agent]
-    command: /data
-    environment:
-      RUSTFS_ACCESS_KEY: repoagent
-      RUSTFS_SECRET_KEY: ${AGENT_OBJECT_PASSWORD:?Run init-local first}
-      RUSTFS_ADDRESS: ':9000'
-      RUSTFS_CONSOLE_ADDRESS: ':9001'
-      RUSTFS_CONSOLE_ENABLE: 'true'
-      RUSTFS_OBS_LOGGER_LEVEL: warn
-    ports: ["127.0.0.1:19000:9000", "127.0.0.1:19001:9001"]
-    volumes: ["agent_objects:/data"]
-    mem_limit: 512m
 volumes:
-  event_mysql:
-  event_redis:
-  event_mq:
-  agent_postgres:
-  agent_search:
-  agent_objects:
+  event_mysql: null
+  event_redis: null
+  event_mq: null

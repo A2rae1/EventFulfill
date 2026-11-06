@@ -1,70 +1,39 @@
-# EventFulfill & RepoLens
+# EventFulfill
 
-Two backend engineering projects in one runnable workspace: **event booking and ticket fulfillment**, and an **evidence-grounded agent for investigating open-source repositories**.
+**活动预约与票务履约平台 · Event booking and ticket fulfillment**
 
-The projects share an authenticated Java task control plane, a Vue demo interface, and local deployment tooling. Keeping them together makes their integration reproducible.
+A Java backend project with limited-capacity bookings, FIFO waitlists, confirmation, simulated payment, ticket issuance and authorized one-time check-in.
 
-## Projects
+**Stack:** Java17, Spring Boot, MyBatis-Plus, MySQL, Redis/Lua, Redisson, RocketMQ, XXL-JOB. Optional Gateway/Nacos, observability and Kubernetes labs remain included.
 
-| Project | Purpose | Main technologies |
-| --- | --- | --- |
-| [EventFulfill](event-platform/) | Capacity-limited booking, FIFO waitlists, confirmation, simulated payment, ticket issuance and authorized check-in | Java 17, Spring Boot, MyBatis-Plus, MySQL, Redis/Lua, Redisson, RocketMQ, XXL-JOB |
-| [RepoLens](repo-agent/) | Investigate a pinned GitHub commit, retrieve source evidence, request approval for constrained checks, and produce traceable reports | Python 3.12, FastAPI, LangGraph, DeepSeek, Elasticsearch, MCP, PostgreSQL, S3-compatible storage, Docker |
+## Business and engineering
 
-### EventFulfill: correctness before throughput
+- Session row locks, conditional capacity updates and unique active claims protect allocation across confirmation, cancellation and expiration. MySQL remains authoritative.
+- Transactional Outbox, publisher leases, idempotent consumption and audited dead-letter replay support recoverable asynchronous fulfillment.
+- Cache Aside, Lua admission and Redisson protect hot reads and request admission; expiration compensation promotes eligible waiters.
+- JWT/RBAC, explicit session authorization, JUnit, concurrency/failure probes and OpenTelemetry support validation and diagnosis.
 
-- Session row locking, conditional capacity updates and unique active claims protect allocation across confirmation, cancellation and expiration.
-- Transactional Outbox, publishing leases, idempotent consumption and dead-letter replay handle asynchronous fulfillment. HTTP 202 means accepted, not allocated.
-- Redis Cache Aside, Lua admission and Redisson protect hot reads and request admission; MySQL remains the source of truth for capacity.
-- Expiration reconciliation releases held capacity and promotes waitlisted requests; JWT/RBAC and explicit session permissions protect one-time check-in.
+## Layout
 
-### RepoLens: evidence and recoverable execution
+`event-platform/`: Java source, tests, Gateway and Vue demo. `infra/`: Java middleware, scheduler/governance/observability labs. `tools/probes/`: optional Java operational probes written in Python. `scripts/`: Java build, test and runtime entry points.
 
-- Repository snapshots, citations and indexes are scoped by repository and commit; BM25, vector and hybrid retrieval can be compared.
-- LangGraph checkpoints, task leases and fenced updates support recovery, cancellation and approval-bound execution.
-- Read-only, non-root, network-disabled runner containers enforce bounded recipes and resource/output limits. This is not a strong sandbox for arbitrary malicious code.
-- MCP tools, scoped Skills, owner-isolated context, S3 report storage and resumable uploads support the research workflow.
-- An 80-case, source-grounded development evaluation set covers evidence, tools, permissions and recovery. Dataset provenance and known limitations are included.
+## Verify and run
 
-## Repository layout
-
-```text
-event-platform/   Java booking service, task control plane, Vue UI and Gateway
-repo-agent/       Python agent, retrieval, tools, constrained runner and evaluation
-infra/            Docker Compose, SQL initialization and optional infrastructure labs
-scripts/          Configuration, builds, startup, bounded verification and diagnostics
-docs/             Setup, architecture, verification scope and upstream notices
-```
-
-## Quick start
-
-Use PowerShell 7 with JDK 17+ (CI uses 21), Maven, Python 3.12, uv, and Docker Desktop with a running engine.
+PowerShell7, JDK17+ and Maven are required for default verification. Docker Desktop is needed for real middleware, and Python/uv only for optional operational probes.
 
 ```powershell
-./scripts/init-local.ps1
-uv sync --project repo-agent --frozen
 ./scripts/verify.ps1
-./scripts/executor-build.ps1
+./scripts/init-local.ps1
 ./scripts/apps-build.ps1
 ./scripts/apps-start.ps1
-```
-
-Open **http://127.0.0.1:8090/**. The initializer generates local secrets in ignored `.env` files. Demo identities are `organizer`, `alice`, `bob`, `checker`, and `operator`; use the generated `EVENT_DEMO_PASSWORD` locally. Never commit those files.
-
-Live model calls are **disabled by default**. To enable them, set your own `DEEPSEEK_API_KEY` and `LIVE_MODEL_ENABLED=true` in `repo-agent/.env`, and review the configured budget. No key is included in this repository.
-
-```powershell
+# http://127.0.0.1:8090/
 ./scripts/apps-stop.ps1
 ```
 
-This stops only the project's runtime groups and retains data volumes. See [setup and operation](docs/SETUP.md) for optional search, scheduling, observability and service-governance groups.
+The initializer generates ignored local secrets. Demo users are organizer/alice/bob/checker/operator; use the generated EVENT_DEMO_PASSWORD locally. Do not commit `.env` files. Default tests use H2; real middleware checks are opt-in and skipped checks are not claimed as passed integrations.
 
-## Verification and limits
+## Optional RepoLens integration
 
-Run `./scripts/verify.ps1` for Python lint/tests and Java/Gateway builds without paid model calls. Real MySQL/Redis/MQ/S3/Postgres/Docker tests are opt-in; skipped tests are not counted as passed integrations.
+[RepoLens](https://github.com/A2rae1/RepoLens) is maintained in a separate repository. EventFulfill hosts its Java identity/task-control API and the optional Agent UI tab. Booking works without the Python worker; the Agent tab requires RepoLens. See [two-repository integration](docs/INTEGRATION.md). The Agent source is not bundled in this repository.
 
-The projects have been exercised locally with real middleware, model calls, UI workflows and recovery probes. [Verification scope](docs/VERIFICATION.md) distinguishes those results from the checks reproducible in default CI. This repository does not claim production traffic, real payment processing, universal repository reproduction or independently measured agent quality.
-
-## Sources and licensing
-
-Business code and integration tooling were developed with AI coding assistance on top of upstream frameworks and SDKs. Upstream software, bundled Vue, XXL-JOB SQL and Kubernetes manifests retain their respective licenses. See [third-party notices](docs/THIRD_PARTY_NOTICES.md). No blanket license is applied to third-party material.
+Payment is simulated, deployment is local, and performance evidence is not production traffic. Business implementation uses AI coding assistance; upstream frameworks retain their own licenses. See [verification scope](docs/VERIFICATION.md) and [third-party notices](docs/THIRD_PARTY_NOTICES.md).

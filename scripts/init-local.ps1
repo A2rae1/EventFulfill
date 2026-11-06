@@ -26,9 +26,3 @@ $localLines=[IO.File]::ReadAllLines($infraEnv)
 if(-not ($localLines | Where-Object { $_ -match '^AGENT_INTERNAL_SECRET=' })) {
     Add-Content -LiteralPath $infraEnv -Value "AGENT_INTERNAL_SECRET=$(New-LocalSecret)" -Encoding utf8
 }
-$agentEnv = Join-Path $workspace 'repo-agent/.env'
-if (-not (Test-Path -LiteralPath $agentEnv)) {
-    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $agentEnv) | Out-Null
-    @('DEEPSEEK_API_KEY=', 'DEEPSEEK_MODEL=deepseek-flash', 'MODEL_BUDGET_CNY=300', 'LIVE_MODEL_ENABLED=false') | Set-Content -LiteralPath $agentEnv -Encoding utf8
-    Write-Output 'Created repo-agent/.env with an empty model-key field.'
-}

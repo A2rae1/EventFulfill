@@ -8,8 +8,8 @@ if($LASTEXITCODE -ne 0){throw 'Could not stop own previous group.'}
 $argsCompose=@('compose','--profile','agent','--env-file',(Join-Path $workspace 'infra/.env'),'-f',(Join-Path $workspace 'infra/compose.yml'),'-f',(Join-Path $workspace 'infra/compose.apps.yml'),'-f',(Join-Path $workspace 'infra/compose.governance.yml'))
 & docker @argsCompose up -d nacos mysql redis namesrv broker
 if($LASTEXITCODE -ne 0){throw 'Governance middleware failed.'}
-Push-Location (Join-Path $workspace 'repo-agent')
-try{& uv run python scripts/nacos_init.py;if($LASTEXITCODE -ne 0){throw 'Own registry initialization failed.'}}finally{Pop-Location}
+Push-Location (Join-Path $workspace 'tools/probes')
+try{& uv run --with httpx==0.28.1 python nacos_init.py;if($LASTEXITCODE -ne 0){throw 'Own registry initialization failed.'}}finally{Pop-Location}
 function Wait-ProjectHealth([string]$Uri){
  $deadline=(Get-Date).AddSeconds(120)
  do{try{$body=Invoke-RestMethod $Uri -TimeoutSec 3;if($body.status -eq 'UP'){return}}catch{};Start-Sleep -Milliseconds 500}while((Get-Date)-lt$deadline)

@@ -48,3 +48,6 @@ Embedding为sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2的CPU ON
 官方MCP SDK1.x；第二客户端为Inspector1.0.4 CLI（本机Node24.15不足当前v2要求，使用维护线并保留package-lock）。Playwright用于无界面UI测试，不控制用户桌面；k6 2.3.0、kind0.33.0、kubectl1.35.8来自官方发行校验，K8s node1.35.8和metrics-server0.9.1固定digest。
 
 上游提供：Web/事务/ORM/MQ/缓存/Agent图/检查点/MCP/对象协议/向量计算等基础。AI实现：票务状态/候补/Outbox协议、Java任务控制面、版本证据/工具/审批/恢复/引用/评测、配置与验证。本人当前已知贡献只限既有基础学习记录，项目理解/变更能力尚未验收，未来按真实学习证据更新。
+
+
+Repository split: Java source is in A2rae1/EventFulfill; Python Agent source is in A2rae1/RepoLens. Historical joint verification is retained as historical evidence; new repository CI is verified separately.

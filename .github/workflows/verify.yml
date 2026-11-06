@@ -1,14 +1,12 @@
-name: Project verification
+name: EventFulfill verification
 on:
   workflow_dispatch:
   push:
-    paths: ['event-platform/**', 'repo-agent/**', 'scripts/verify.ps1', '.github/workflows/verify.yml']
   pull_request:
-    paths: ['event-platform/**', 'repo-agent/**', 'scripts/verify.ps1', '.github/workflows/verify.yml']
 permissions:
   contents: read
 jobs:
-  bounded-regression:
+  verify:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
@@ -18,19 +16,6 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - uses: astral-sh/setup-uv@v6
-        with:
-          version: '0.11.8'
-      - name: Unit, contract, lint, and package verification (no paid APIs)
+      - name: Java and Gateway verification
         shell: pwsh
         run: ./scripts/verify.ps1
-      - name: Preserve logs and reports even on failure
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: verification
-          path: |
-            .local/verification/
-            event-platform/target/surefire-reports/
-            event-platform/gateway/target/surefire-reports/
-          retention-days: 14

@@ -6,7 +6,7 @@ Java17目标 / Spring Boot3.5.16 / MyBatis-Plus3.5.18 / MySQL8.4.9 / Redis7.4.2 
 
 ## 运行与验证
 
-在工作区根目录按`docs/SETUP.md`初始化/构建/启动，访问http://127.0.0.1:8090/。`mvn -B -ntp verify`默认H2；真实MySQL/Redis/MQ有独立脚本及条件开关，不混算默认跳过。新MySQL13406，旧学习服务13306不动。接口文档`/swagger-ui/index.html`，鉴权仍生效。
+在工作区根目录按`docs/INTEGRATION.md`初始化/构建/启动，访问http://127.0.0.1:8090/。`mvn -B -ntp verify`默认H2；真实MySQL/Redis/MQ有独立脚本及条件开关，不混算默认跳过。新MySQL13406，旧学习服务13306不动。接口文档`/swagger-ui/index.html`，鉴权仍生效。
 
 ## 关键约束
 

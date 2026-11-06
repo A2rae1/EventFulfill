@@ -1,6 +1,0 @@
-*
-!pyproject.toml
-!uv.lock
-!src/
-!src/repo_agent/
-!src/repo_agent/*.py

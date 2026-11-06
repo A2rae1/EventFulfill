@@ -1,8 +1,7 @@
-# Applied with compose.yml. Native Java/Python must be stopped first.
 services:
   broker:
     volumes:
-      - ./rocketmq/broker-container.conf:/home/rocketmq/broker.conf:ro
+    - ./rocketmq/broker-container.conf:/home/rocketmq/broker.conf:ro
   event-app:
     image: eventfulfill:local
     init: true
@@ -22,45 +21,16 @@ services:
       ROCKETMQ_NAMESRV: namesrv:9876
       AGENT_INTERNAL_SECRET: ${AGENT_INTERNAL_SECRET}
       APP_AGENT_URL: http://repo-agent:8092
-    ports: ['127.0.0.1:8090:8090']
+    ports:
+    - 127.0.0.1:8090:8090
     depends_on:
-      mysql: {condition: service_healthy}
-      redis: {condition: service_healthy}
-      broker: {condition: service_started}
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      broker:
+        condition: service_started
     mem_limit: 448m
     cpus: 1
     restart: on-failure:3
-  repo-agent:
-    image: repolens:local
-    init: true
-    stop_grace_period: 30s
-    env_file: ../repo-agent/.env
-    environment:
-      DATA_DIR: /app/.local
-      CONTROL_URL: http://event-app:8090
-      AGENT_INTERNAL_SECRET: ${AGENT_INTERNAL_SECRET}
-      CHECKPOINT_URL: postgresql://repoagent:${AGENT_CHECKPOINT_PASSWORD}@postgres:5432/repoagent
-      OBJECT_URL: http://objectstore:9000
-      OBJECT_SECRET_KEY: ${AGENT_OBJECT_PASSWORD}
-      OBJECT_ENABLED: 'true'
-      SEARCH_BACKEND: fts
-      EXECUTOR_ENABLED: 'true'
-      EXECUTOR_WORK_DIR: /runner-work
-      EXECUTOR_VOLUME: internship-projects_runner_work
-    volumes:
-      # One cumulative paid-model ledger across native and container modes.
-      # Do not run a native Agent/evaluator writer at the same time.
-      - ../repo-agent/.local:/app/.local
-      - runner_work:/runner-work
-      # Trusted local orchestrator only, never passed to untrusted runner containers.
-      - /var/run/docker.sock:/var/run/docker.sock
-    ports: ['127.0.0.1:8092:8092']
-    depends_on:
-      postgres: {condition: service_healthy}
-      objectstore: {condition: service_started}
-    mem_limit: 320m
-    cpus: 1
-    restart: on-failure:3
-volumes:
-  runner_work:
-    name: internship-projects_runner_work
+volumes: {}

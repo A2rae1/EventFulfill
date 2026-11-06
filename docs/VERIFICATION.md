@@ -24,3 +24,6 @@ The 80-case Click 8.1.8 fixed-commit set is AI-authored and contract/source grou
 On 40 AI-path-labeled retrieval queries, BM25 Recall@5=.775, hybrid=.6375 and rerank=.75. Hybrid did not beat BM25 in this sample. A fixed Click constrained pytest recipe recorded 628 passed / 21 skipped / 1 expected failure; those are upstream tests, not 628 tests authored for this application.
 
 The local booking probe used 100 synthetic users / 200 submissions at 20 VU, resulting in 20 held / 80 waiting and matching allocation/capacity counters. It is not a throughput ceiling, production scale or end-to-end fulfillment latency measurement. No external user data or live payment channel is involved.
+
+
+Repository split: Java source is in A2rae1/EventFulfill; Python Agent source is in A2rae1/RepoLens. Historical joint verification is retained as historical evidence; new repository CI is verified separately.
