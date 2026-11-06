@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:event;MODE=MySQL;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=15000;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password: ''
+    driver-class-name: org.h2.Driver
+  data:
+    redis:
+      repositories:
+        enabled: false
+app:
+  jwt-secret: test-only-0123456789abcdef0123456789abcdef
+  payment-secret: test-only-abcdef0123456789abcdef0123456789
+  redis-enabled: false
+  jobs-enabled: false
+  demo-users: false

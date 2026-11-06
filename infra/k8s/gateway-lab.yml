@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: internship-lab
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: bounded-lab
+  namespace: internship-lab
+spec:
+  hard:
+    requests.cpu: 700m
+    requests.memory: 768Mi
+    limits.cpu: '2'
+    limits.memory: 1024Mi
+    pods: '4'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-gateway
+  namespace: internship-lab
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels: {app: event-gateway}
+  template:
+    metadata:
+      labels: {app: event-gateway}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: gateway
+          image: event-gateway:local
+          imagePullPolicy: Never
+          command: ['java']
+          args: ['-Xms32m','-Xmx96m','-XX:ActiveProcessorCount=1','-jar','/app/gateway.jar']
+          env:
+            - {name: NACOS_ENABLED, value: 'false'}
+            - {name: EVENT_API_URL, value: 'http://127.0.0.1:1'}
+            - {name: AGENT_API_URL, value: 'http://127.0.0.1:1'}
+          ports: [{containerPort: 8080}]
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ['ALL']}
+            readOnlyRootFilesystem: true
+          volumeMounts: [{name: temp, mountPath: /tmp}]
+          startupProbe:
+            httpGet: {path: /actuator/health, port: 8080}
+            failureThreshold: 45
+            periodSeconds: 2
+          readinessProbe:
+            httpGet: {path: /actuator/health, port: 8080}
+            periodSeconds: 2
+          livenessProbe:
+            httpGet: {path: /actuator/health, port: 8080}
+            periodSeconds: 10
+      volumes:
+        - name: temp
+          emptyDir: {sizeLimit: 32Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-gateway
+  namespace: internship-lab
+spec:
+  selector: {app: event-gateway}
+  type: NodePort
+  ports: [{port: 8080, targetPort: 8080, nodePort: 30080}]
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: event-gateway
+  namespace: internship-lab
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: event-gateway}
+  minReplicas: 2
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: {type: Utilization, averageUtilization: 30}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 30
+    scaleUp:
+      stabilizationWindowSeconds: 0

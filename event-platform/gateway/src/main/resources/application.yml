@@ -1,0 +1,44 @@
+server:
+  port: ${PORT:8080}
+spring:
+  application:
+    name: event-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 1000
+            response-timeout: 10s
+            pool:
+              type: fixed
+              max-connections: 32
+              acquire-timeout: 1000
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+gateway:
+  java-fallback: ${EVENT_API_URL:http://127.0.0.1:8090}
+  agent-url: ${AGENT_API_URL:http://127.0.0.1:8092}
+  nacos-enabled: ${NACOS_ENABLED:false}
+resilience4j:
+  circuitbreaker:
+    instances:
+      javaApi:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 3s
+      agentApi:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 3s
+  timelimiter:
+    instances:
+      javaApi:
+        timeoutDuration: 3s
+      agentApi:
+        timeoutDuration: 8s

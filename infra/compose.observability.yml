@@ -1,0 +1,44 @@
+services:
+  event-app:
+    environment:
+      OTEL_EXPORT_ENABLED: 'true'
+      OTEL_HTTP_ENDPOINT: http://otel-collector:4318/v1/traces
+      METRICS_PASSWORD: ${METRICS_PASSWORD}
+  repo-agent:
+    environment:
+      OTLP_ENDPOINT: http://otel-collector:4318
+      METRICS_PASSWORD: ${METRICS_PASSWORD}
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib@sha256:340c9ca6a36617084c6661bdc4f0fe92b7cda5a805d61673ec8db375fddc522b
+    command: ['--config=/etc/otel.yml']
+    volumes: ['./observability/otel.yml:/etc/otel.yml:ro']
+    ports: ['127.0.0.1:44318:4318']
+    mem_limit: 128m
+    depends_on: [tempo]
+  tempo:
+    image: grafana/tempo:2.9.0
+    command: ['-config.file=/etc/tempo.yml']
+    volumes: ['./observability/tempo.yml:/etc/tempo.yml:ro']
+    ports: ['127.0.0.1:13200:3200']
+    mem_limit: 256m
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    command: ['--config.file=/etc/prometheus/prometheus.yml','--storage.tsdb.retention.time=1d']
+    volumes: ['../.local/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro']
+    ports: ['127.0.0.1:19090:9090']
+    mem_limit: 192m
+  grafana:
+    image: grafana/grafana:12.3.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_AUTH_ANONYMOUS_ENABLED: 'false'
+      GF_ANALYTICS_REPORTING_ENABLED: 'false'
+      GF_ANALYTICS_CHECK_FOR_UPDATES: 'false'
+      GF_ANALYTICS_CHECK_FOR_PLUGIN_UPDATES: 'false'
+      GF_PLUGINS_PREINSTALL_DISABLED: 'true'
+    volumes:
+      - ./observability/grafana-datasources.yml:/etc/grafana/provisioning/datasources/project.yml:ro
+      - ./observability/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/project.yml:ro
+      - ./observability/project-dashboard.json:/var/lib/grafana/dashboards/project.json:ro
+    ports: ['127.0.0.1:13000:3000']
+    mem_limit: 192m

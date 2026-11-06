@@ -1,0 +1,65 @@
+x-app-env: &governed-app
+  EVENT_DB_URL: jdbc:mysql://mysql:3306/eventfulfill_docker?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+  EVENT_DB_PASSWORD: ${EVENT_DB_PASSWORD}
+  EVENT_JWT_SECRET: ${EVENT_JWT_SECRET}
+  EVENT_PAYMENT_SECRET: ${EVENT_PAYMENT_SECRET}
+  EVENT_DEMO_PASSWORD: ${EVENT_DEMO_PASSWORD}
+  EVENT_DEMO_USERS: 'true'
+  EVENT_MESSAGING: rocketmq
+  APP_MQ_TOPIC: event_docker_domain_v1
+  APP_MQ_CONSUMER_GROUP: event-docker-fulfill-v1
+  REDIS_HOST: redis
+  REDIS_PORT: '6379'
+  ROCKETMQ_NAMESRV: namesrv:9876
+  AGENT_INTERNAL_SECRET: ${AGENT_INTERNAL_SECRET}
+  APP_AGENT_URL: http://repo-agent:8092
+  APP_DISCOVERY_ENABLED: 'true'
+  NACOS_SERVER_ADDR: nacos:8848
+  NACOS_PASSWORD: ${NACOS_PASSWORD}
+  OTEL_EXPORT_ENABLED: 'false'
+services:
+  event-app:
+    environment: *governed-app
+    mem_limit: 512m
+  event-app-2:
+    image: eventfulfill:local
+    init: true
+    environment: *governed-app
+    ports: ['127.0.0.1:8093:8090']
+    mem_limit: 512m
+    cpus: 1
+    stop_grace_period: 30s
+  nacos:
+    image: nacos/nacos-server@sha256:bf18e41d09efd4e72edc46b010d42dca49f776421413cb2637be1fff0d6ef90f
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: 'true'
+      NACOS_AUTH_ADMIN_ENABLE: 'true'
+      NACOS_AUTH_CONSOLE_ENABLE: 'true'
+      NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN}
+      NACOS_AUTH_IDENTITY_KEY: project-server
+      NACOS_AUTH_IDENTITY_VALUE: ${NACOS_IDENTITY_VALUE}
+      JVM_XMS: 128m
+      JVM_XMX: 256m
+      JVM_XMN: 96m
+      JVM_MS: 64m
+      JVM_MMS: 160m
+    ports: ['127.0.0.1:18848:8848','127.0.0.1:19848:9848','127.0.0.1:18880:8080']
+    volumes: ['governance_registry:/home/nacos/data']
+    mem_limit: 640m
+    cpus: 1
+  gateway:
+    image: event-gateway:local
+    init: true
+    environment:
+      NACOS_ENABLED: 'true'
+      NACOS_SERVER_ADDR: nacos:8848
+      NACOS_PASSWORD: ${NACOS_PASSWORD}
+      EVENT_API_URL: http://event-app:8090
+      AGENT_API_URL: http://repo-agent:8092
+    ports: ['127.0.0.1:8080:8080']
+    mem_limit: 320m
+    cpus: 1
+    stop_grace_period: 30s
+volumes:
+  governance_registry:

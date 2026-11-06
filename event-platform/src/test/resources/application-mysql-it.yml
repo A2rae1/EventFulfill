@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:13406/eventfulfill_test?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+    username: eventfulfill
+    password: ${EVENT_DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver

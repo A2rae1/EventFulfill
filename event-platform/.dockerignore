@@ -1,0 +1,4 @@
+*
+!target/
+target/*
+!target/event-platform-0.1.0.jar

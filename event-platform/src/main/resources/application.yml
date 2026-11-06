@@ -1,0 +1,54 @@
+server:
+  port: ${PORT:8090}
+  error:
+    include-message: never
+spring:
+  application:
+    name: event-fulfill
+  datasource:
+    url: ${EVENT_DB_URL:jdbc:mysql://127.0.0.1:13406/eventfulfill?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true}
+    username: ${EVENT_DB_USER:eventfulfill}
+    password: ${EVENT_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 12
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:16379}
+      timeout: 500ms
+  jackson:
+    time-zone: UTC
+  flyway:
+    enabled: true
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    arg-name-based-constructor-auto-mapping: true
+management:
+  tracing:
+    sampling:
+      probability: ${TRACE_SAMPLE_RATE:1.0}
+    propagation:
+      type: W3C
+  otlp:
+    tracing:
+      endpoint: ${OTEL_HTTP_ENDPOINT:http://127.0.0.1:44318/v1/traces}
+      timeout: 3s
+      connect-timeout: 2s
+      export:
+        enabled: ${OTEL_EXPORT_ENABLED:false}
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: never
+app:
+  jwt-secret: ${EVENT_JWT_SECRET}
+  payment-secret: ${EVENT_PAYMENT_SECRET}
+  demo-users: ${EVENT_DEMO_USERS:false}
+  demo-password: ${EVENT_DEMO_PASSWORD:}
+  jobs-enabled: true
+  redis-enabled: ${EVENT_REDIS_ENABLED:true}
+  messaging: ${EVENT_MESSAGING:local}

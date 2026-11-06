@@ -1,0 +1,28 @@
+services:
+  event-app:
+    environment:
+      APP_XXL_ENABLED: 'true'
+      APP_RECONCILE_ENABLED: 'false'
+      XXL_ADMIN_URL: http://xxl-job:8080/xxl-job-admin
+      XXL_ACCESS_TOKEN: ${XXL_ACCESS_TOKEN}
+      APP_DISCOVERY_ENABLED: 'false'
+      OTEL_EXPORT_ENABLED: 'false'
+    volumes: ['managed_job_logs:/tmp/xxl-job']
+  xxl-job:
+    image: ${XXL_ADMIN_IMAGE:-xuxueli/xxl-job-admin:3.1.1}
+    environment:
+      JAVA_OPTS: -Xms64m -Xmx256m -XX:ActiveProcessorCount=2
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/xxl_job_project?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eventfulfill
+      SPRING_DATASOURCE_PASSWORD: ${EVENT_DB_PASSWORD}
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: '1'
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: '4'
+      XXL_JOB_ACCESSTOKEN: ${XXL_ACCESS_TOKEN}
+      XXL_JOB_LOGRETENTIONDAYS: '7'
+    ports: ['127.0.0.1:18080:8080']
+    volumes: ['managed_admin_logs:/data/applogs']
+    mem_limit: 512m
+    cpus: 1
+volumes:
+  managed_job_logs:
+  managed_admin_logs:
