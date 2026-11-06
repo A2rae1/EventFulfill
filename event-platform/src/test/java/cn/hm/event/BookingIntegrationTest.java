@@ -109,11 +109,24 @@ class BookingIntegrationTest {
     @Test void confirmVersusExpiryAndRepeatedReleasePreservesInvariant() throws Exception {
         Session s=session(1,0,1); Booking a=book(s,"a"); clock.advance(2);
         try(ExecutorCloser pool=new ExecutorCloser(2)) {
-            List<Callable<Void>> calls=List.of(()->{service.confirm("a",a.orderId());return null;},()->{service.expire(a.orderId());return null;});
-            for(Future<Void> f:pool.executor.invokeAll(calls)) f.get();
+            List<Callable<Void>> calls=List.of(()->{
+                try {
+                    assertThat(service.confirm("a",a.orderId()).status()).isEqualTo("EXPIRED");
+                } catch(DomainException e) {
+                    // Expiry may commit before confirmation acquires the session lock.
+                    assertThat(e.status()).isEqualTo(409);
+                    assertThat(e.code()).isEqualTo("STATE_CONFLICT");
+                    assertThat(db.order(a.orderId()).status()).isEqualTo("EXPIRED");
+                }
+                return null;
+            },()->{service.expire(a.orderId());return null;});
+            for(Future<Void> f:pool.executor.invokeAll(calls)) f.get(30,TimeUnit.SECONDS);
         }
         service.expire(a.orderId()); service.cancelOrder("a",a.orderId());
         assertThat(db.session(s.id()).used()).isZero(); assertThat(db.order(a.orderId()).status()).isEqualTo("EXPIRED"); invariant(s.id());
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM allocation WHERE order_id=? AND status='RELEASED'",Integer.class,a.orderId())).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM admission_ticket WHERE order_id=?",Integer.class,a.orderId())).isZero();
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM outbox_event WHERE aggregate_id=? AND topic='ORDER_EXPIRED'",Integer.class,a.orderId())).isEqualTo(1);
     }
     @Test void transactionalOutboxRollsBackWithFailedTransaction() {
         Session s=session(1,0,60); Booking a=book(s,"a"); service.confirm("a",a.orderId());
@@ -126,3 +139,4 @@ class BookingIntegrationTest {
         public void close() { executor.shutdownNow(); }
     }
 }
+
