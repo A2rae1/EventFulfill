@@ -37,3 +37,7 @@ The initializer generates ignored local secrets. Demo users are organizer/alice/
 [RepoLens](https://github.com/A2rae1/RepoLens) is maintained in a separate repository. EventFulfill hosts its Java identity/task-control API and the optional Agent UI tab. Booking works without the Python worker; the Agent tab requires RepoLens. See [two-repository integration](docs/INTEGRATION.md). The Agent source is not bundled in this repository.
 
 Payment is simulated, deployment is local, and performance evidence is not production traffic. Business implementation uses AI coding assistance; upstream frameworks retain their own licenses. See [verification scope](docs/VERIFICATION.md) and [third-party notices](docs/THIRD_PARTY_NOTICES.md).
+
+## Review fixes
+
+See [reliability fixes](docs/REVIEW_FIXES_2026-11-06.md) for current-read transactions, durable approval delivery, generation-separated retries, evidence precision and versioned evaluation metrics. Rebuild old container images before using this source. See [2026-11-07 verification](docs/FINAL_VERIFICATION_2026-11-07.md) for the rebuilt two-checkout acceptance and remaining boundaries.

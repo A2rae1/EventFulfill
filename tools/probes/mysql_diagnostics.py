@@ -40,7 +40,7 @@ async def main():
         "table": table,
         "scope": "Single synthetic owner/status history query, warm shared local MySQL. Plan demonstrates access path and sort change, not universal speedup or production latency. MVCC current-read regression recorded separately.",
     }
-    out = ROOT / "repo-agent/.local/mysql_diagnostics.json"
+    out = ROOT / ".local/mysql_diagnostics.json"
     out.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result))
 

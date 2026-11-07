@@ -9,6 +9,8 @@ from pathlib import Path
 
 import httpx
 
+from jobs_init import PROJECT
+
 ROOT = Path(__file__).resolve().parents[2]
 DOCKER = Path(os.environ["LOCALAPPDATA"]) / "Programs/DockerDesktop/resources/bin/docker.exe"
 
@@ -104,7 +106,7 @@ async def main():
             await publish(original)
         stopped = time.monotonic()
         try:
-            await docker("stop", "-t", "20", "internship-projects-event-app-2-1")
+            await docker("stop", "-t", "20", f"{PROJECT}-event-app-2-1")
             for _ in range(40):
                 try:
                     remaining = await instances(4)
@@ -118,7 +120,7 @@ async def main():
             assert remaining.issubset(seen)
             recovery_seconds = round(time.monotonic() - stopped, 3)
         finally:
-            await docker("start", "internship-projects-event-app-2-1")
+            await docker("start", f"{PROJECT}-event-app-2-1")
         for _ in range(80):
             try:
                 restored = await instances(4)
@@ -142,7 +144,7 @@ async def main():
             "stop_and_recovery_seconds": recovery_seconds,
             "limits": "Single host development lab; stop includes graceful 20s budget. No throughput or production HA claim. AI worker intentionally stopped.",
         }
-        out = ROOT / "repo-agent/.local/governance_probe.json"
+        out = ROOT / ".local/governance_probe.json"
         out.write_text(json.dumps(artifact, ensure_ascii=False, indent=2))
         print(json.dumps(artifact, ensure_ascii=False))
 

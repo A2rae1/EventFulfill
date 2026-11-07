@@ -3,6 +3,7 @@
 import asyncio
 import json
 import os
+import re
 import subprocess
 import uuid
 from pathlib import Path
@@ -12,7 +13,10 @@ import httpx
 
 async def main():
     docker = str(Path(os.environ["LOCALAPPDATA"]) / "Programs/DockerDesktop/resources/bin/docker.exe")
-    container = "internship-projects-redis-1"
+    project = os.environ.get("E2E_COMPOSE_PROJECT", "internship-projects")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,40}", project):
+        raise ValueError("Invalid explicit project name")
+    container = project + "-redis-1"
 
     def command(*args):
         result = subprocess.run([docker, *args, container], capture_output=True, timeout=30)
@@ -88,7 +92,7 @@ async def main():
             "admission_when_redis_down": 503,
             "no_request_written": True,
             "redis_restored": True,
-            "scope": "only internship-projects-redis-1; native old MySQL untouched",
+            "scope": f"only {container}; native old MySQL untouched",
         }
         Path(".local/redis_outage_probe.json").write_text(
             json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"

@@ -1,0 +1,2 @@
+ALTER TABLE agent_job ADD COLUMN generation BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE agent_job ADD COLUMN approval_hash VARCHAR(64);

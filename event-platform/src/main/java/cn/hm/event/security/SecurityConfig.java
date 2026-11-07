@@ -37,7 +37,7 @@ public class SecurityConfig {
         JwtAuthenticationConverter converter=new JwtAuthenticationConverter(); converter.setJwtGrantedAuthoritiesConverter(roles);
         return http.csrf(csrf->csrf.disable())
             .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(a->a.requestMatchers("/","/index.html","/app.js","/style.css","/vendor/**","/favicon.ico","/favicon.svg","/api/auth/login","/actuator/health","/api/mock-payments/callback","/internal/agent-jobs/**").permitAll()
+            .authorizeHttpRequests(a->a.requestMatchers("/","/index.html","/app.js","/event-stream.js","/style.css","/vendor/**","/favicon.ico","/favicon.svg","/api/auth/login","/actuator/health","/api/mock-payments/callback","/internal/agent-jobs/**").permitAll()
                 .requestMatchers("/actuator/**").hasRole("ORGANIZER").anyRequest().authenticated())
             .oauth2ResourceServer(o->o.jwt(j->j.jwtAuthenticationConverter(converter))).build();
     }

@@ -29,7 +29,7 @@ async def main():
             f"SELECT JSON_ARRAYAGG(JSON_OBJECT({members})) FROM eventfulfill_docker.{table} WHERE {condition};"
         )
         snapshot[table] = json.loads(raw)
-    target = ROOT / "repo-agent/.local/load-fixture-repair-before.json"
+    target = ROOT / ".local/load-fixture-repair-before.json"
     if target.exists():
         raise RuntimeError("Before image already exists; do not rerun repair blindly")
     target.write_text(json.dumps(snapshot, indent=2), encoding="utf-8")
@@ -51,7 +51,7 @@ async def main():
         "repaired_request_links": count,
         "before_image": "load-fixture-repair-before.json",
     }
-    (ROOT / "repo-agent/.local/load_fixture_repair.json").write_text(
+    (ROOT / ".local/load_fixture_repair.json").write_text(
         json.dumps(result, indent=2), encoding="utf-8"
     )
     print(json.dumps(result))

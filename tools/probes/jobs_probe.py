@@ -7,7 +7,7 @@ import uuid
 
 import httpx
 
-from jobs_init import DOCKER, ROOT, sql
+from jobs_init import DOCKER, PROJECT, ROOT, sql
 
 
 async def docker(*args):
@@ -145,11 +145,11 @@ async def main():
             # Redis lock fails closed; admin records failure and retries once after recovery.
             base = await maxlog()
             try:
-                await docker("stop", "--timeout", "10", "internship-projects-redis-1")
+                await docker("stop", "--timeout", "10", f"{PROJECT}-redis-1")
                 await operation("trigger", executorParam="", addressList="")
                 failed = await wait_log(base, 500)
             finally:
-                await docker("start", "internship-projects-redis-1")
+                await docker("start", f"{PROJECT}-redis-1")
             retried = await wait_log(failed[0][0], 200, 90)
             assert any(row[3] == 0 for row in retried), retried
             result["automatic_retry"] = {
@@ -160,7 +160,7 @@ async def main():
             # Leave a due order while the managed scheduler is unavailable, then recover a missed tick.
             await operation("start")
             try:
-                await docker("stop", "--timeout", "15", "internship-projects-xxl-job-1")
+                await docker("stop", "--timeout", "15", f"{PROJECT}-xxl-job-1")
                 sid2, oid2 = await expired_fixture()
                 await asyncio.sleep(12)
                 assert (
@@ -169,7 +169,7 @@ async def main():
                 )
                 resume = await maxlog()
             finally:
-                await docker("start", "internship-projects-xxl-job-1")
+                await docker("start", f"{PROJECT}-xxl-job-1")
             for _ in range(100):
                 try:
                     await login_admin()
@@ -198,7 +198,7 @@ async def main():
             "admin_version": "3.1.1",
             "scope": "Own synthetic fixtures, real admin/executor callback and DB invariants; admin is trusted, executor port internal only. No production HA claim.",
         }
-        target = ROOT / "repo-agent/.local/jobs_probe.json"
+        target = ROOT / ".local/jobs_probe.json"
         target.write_text(json.dumps(result, indent=2), encoding="utf-8")
         print(json.dumps(result))
 

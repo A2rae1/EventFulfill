@@ -152,7 +152,7 @@ async def main():
         "measurements": results,
         "limits": "Single localhost development sample, 2 CPUs WSL and shared host. Cold means distinct uncached records, warm means one primed key. Not a controlled speedup or capacity ceiling; acceptance latency excludes asynchronous allocation.",
     }
-    target = ROOT / "repo-agent/.local/load_probe.json"
+    target = ROOT / ".local/load_probe.json"
     target.write_text(json.dumps(result, ensure_ascii=False, indent=2))
     print(json.dumps(result, ensure_ascii=False))
 

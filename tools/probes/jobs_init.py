@@ -7,6 +7,9 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+PROJECT = os.environ.get("E2E_COMPOSE_PROJECT", "internship-projects")
+if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,40}", PROJECT):
+    raise ValueError("Invalid explicit project name")
 DOCKER = Path(os.environ["LOCALAPPDATA"]) / "Programs/DockerDesktop/resources/bin/docker.exe"
 
 
@@ -15,7 +18,7 @@ async def sql(statement):
         str(DOCKER),
         "exec",
         "-i",
-        "internship-projects-mysql-1",
+        f"{PROJECT}-mysql-1",
         "sh",
         "-c",
         'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -N -B',

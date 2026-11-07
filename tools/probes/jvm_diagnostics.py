@@ -94,7 +94,7 @@ async def main():
         "evidence": ".local/jvm-diagnostics/{threads,heap,flags,oom}.txt",
         "synthetic_dump_excluded_from_public_evidence": True,
     }
-    (ROOT / "repo-agent/.local/jvm_diagnostics.json").write_text(
+    (ROOT / ".local/jvm_diagnostics.json").write_text(
         json.dumps(result, indent=2), encoding="utf-8"
     )
     print(json.dumps(result))

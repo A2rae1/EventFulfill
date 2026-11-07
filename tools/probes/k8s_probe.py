@@ -175,7 +175,7 @@ async def main():
             "backend_unavailable_expected": 503,
             "scope": "Single-node local Gateway-component experiment; Compose business/DB/Agent stopped for resource budget. Health continuity is not end-to-end booking availability or production HA. Only lab kubelet metrics uses the documented self-signed-certificate test flag.",
         }
-        out = ROOT / "repo-agent/.local/k8s_probe.json"
+        out = ROOT / ".local/k8s_probe.json"
         out.write_text(json.dumps(results, indent=2), encoding="utf-8")
         print(json.dumps(results))
 
