@@ -18,8 +18,8 @@ class EntryLimitsTest {
    open.remove(0).dispose();filter.filter(MockServerWebExchange.from(MockServerHttpRequest.get("/api/read")),e->{entered.incrementAndGet();return Mono.empty();}).block(Duration.ofSeconds(1));assertThat(entered.get()).isEqualTo(33);
   }finally{open.forEach(Disposable::dispose);}
  }
- @Test void maintenanceStopsNewWorkButAllowsQueries(){var policy=new GatewayPolicy();policy.agentAdmission.set(false);var filter=new EntryLimits(policy);
-  var create=MockServerWebExchange.from(MockServerHttpRequest.post("/api/agent/jobs"));filter.filter(create,e->{throw new AssertionError("must not create");}).block();assertThat(create.getResponse().getStatusCode().value()).isEqualTo(503);
-  AtomicInteger queries=new AtomicInteger();filter.filter(MockServerWebExchange.from(MockServerHttpRequest.get("/api/agent/jobs")),e->{queries.incrementAndGet();return Mono.empty();}).block();assertThat(queries.get()).isEqualTo(1);
+ @Test void maintenanceStopsNewWorkButAllowsQueries(){var policy=new GatewayPolicy();policy.bookingAdmission.set(false);var filter=new EntryLimits(policy);
+  var create=MockServerWebExchange.from(MockServerHttpRequest.post("/api/booking-requests"));filter.filter(create,e->{throw new AssertionError("must not create");}).block();assertThat(create.getResponse().getStatusCode().value()).isEqualTo(503);
+  AtomicInteger queries=new AtomicInteger();filter.filter(MockServerWebExchange.from(MockServerHttpRequest.get("/api/booking-requests")),e->{queries.incrementAndGet();return Mono.empty();}).block();assertThat(queries.get()).isEqualTo(1);
  }
 }

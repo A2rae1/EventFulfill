@@ -28,11 +28,11 @@ import static org.awaitility.Awaitility.await;
 @SpringBootTest(properties={"app.messaging=rocketmq","app.jobs-enabled=false","app.mq-topic=event_recovery_it_v1","app.mq-consumer-group=event-recovery-it-v1","app.mq-max-retries=1","app.mq-retry-delay-level=1","spring.datasource.url=jdbc:mysql://127.0.0.1:13406/eventfulfill_mq_it?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true"})
 class MqRecoveryIntegrationTest {
     @TestConfiguration static class Config {
-        @Bean @Primary FaultConsumer faultConsumer(EventMapper db,BookingService time,AgentWakeClient wake){return new FaultConsumer(db,time,wake);}
+        @Bean @Primary FaultConsumer faultConsumer(EventMapper db,BookingService time){return new FaultConsumer(db,time);}
     }
     static class FaultConsumer extends EventConsumer {
         final Map<String,AtomicInteger> faults=new ConcurrentHashMap<>();
-        FaultConsumer(EventMapper db,BookingService booking,AgentWakeClient wake){super(db,booking,wake);}
+        FaultConsumer(EventMapper db,BookingService booking){super(db,booking);}
         public void fail(String id,int count){faults.put(id,new AtomicInteger(count));}
         public void clear(String id){faults.remove(id);}
         @Override @Transactional(rollbackFor=Exception.class)

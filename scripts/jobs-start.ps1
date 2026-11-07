@@ -7,7 +7,7 @@ $argsCompose=@('compose','--profile','agent','--env-file',(Join-Path $workspace 
 & docker @argsCompose up -d mysql redis namesrv broker
 if($LASTEXITCODE-ne 0){throw 'Own job middleware failed'}
 $deadline=(Get-Date).AddSeconds(90)
-do{$health=(& docker inspect internship-projects-mysql-1 --format '{{.State.Health.Status}}');if($health.Trim()-eq'healthy'){break};Start-Sleep -Milliseconds 500}while((Get-Date)-lt$deadline)
+do{$health=(& docker inspect eventfulfill-mysql-1 --format '{{.State.Health.Status}}');if($health.Trim()-eq'healthy'){break};Start-Sleep -Milliseconds 500}while((Get-Date)-lt$deadline)
 if($health.Trim()-ne'healthy'){throw 'Own MySQL not ready'}
 & (Join-Path $PSScriptRoot 'init-jobs.ps1')
 & docker @argsCompose run --rm --no-deps --user 0 --entrypoint sh event-app -c 'mkdir -p /tmp/xxl-job; chown -R 10001:10001 /tmp/xxl-job'

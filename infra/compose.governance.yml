@@ -11,8 +11,6 @@ x-app-env: &governed-app
   REDIS_HOST: redis
   REDIS_PORT: '6379'
   ROCKETMQ_NAMESRV: namesrv:9876
-  AGENT_INTERNAL_SECRET: ${AGENT_INTERNAL_SECRET}
-  APP_AGENT_URL: http://repo-agent:8092
   APP_DISCOVERY_ENABLED: 'true'
   NACOS_SERVER_ADDR: nacos:8848
   NACOS_PASSWORD: ${NACOS_PASSWORD}
@@ -56,7 +54,6 @@ services:
       NACOS_SERVER_ADDR: nacos:8848
       NACOS_PASSWORD: ${NACOS_PASSWORD}
       EVENT_API_URL: http://event-app:8090
-      AGENT_API_URL: http://repo-agent:8092
     ports: ['127.0.0.1:8080:8080']
     mem_limit: 320m
     cpus: 1

@@ -13,7 +13,7 @@ import httpx
 
 async def main():
     docker = str(Path(os.environ["LOCALAPPDATA"]) / "Programs/DockerDesktop/resources/bin/docker.exe")
-    project = os.environ.get("E2E_COMPOSE_PROJECT", "internship-projects")
+    project = os.environ.get("E2E_COMPOSE_PROJECT", "eventfulfill")
     if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,40}", project):
         raise ValueError("Invalid explicit project name")
     container = project + "-redis-1"

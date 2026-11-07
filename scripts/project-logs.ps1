@@ -3,7 +3,7 @@ $ErrorActionPreference='Stop'
 $workspace=Split-Path -Parent $PSScriptRoot
 $docker=Join-Path $env:LOCALAPPDATA 'Programs/DockerDesktop/resources/bin/docker.exe'
 $project=& $docker inspect $Container --format '{{index .Config.Labels "com.docker.compose.project"}}'
-if($project.Trim() -ne 'internship-projects'){throw 'Only this project container logs may be read by this helper.'}
+if($project.Trim() -ne 'eventfulfill'){throw 'Only this project container logs may be read by this helper.'}
 $logText=(& $docker logs --tail $Tail $Container 2>&1 | Out-String)
 foreach($line in [IO.File]::ReadAllLines((Join-Path $workspace 'infra/.env'))){
  if($line -match '^[A-Z][A-Z0-9_]*=(.+)$'){

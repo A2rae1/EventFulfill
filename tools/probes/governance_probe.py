@@ -90,17 +90,17 @@ async def main():
             assert r.json()["code"] in (0, 200)
 
         try:
-            await publish("agent_admission_enabled=false\n")
+            await publish("booking_admission_enabled=false\n")
             for _ in range(40):
                 status = await c.get(origin + "/gateway/status")
-                if status.json()["agentAdmissionEnabled"] is False:
+                if status.json()["bookingAdmissionEnabled"] is False:
                     break
                 await asyncio.sleep(0.5)
             else:
                 raise AssertionError("Configuration did not propagate")
-            blocked = await c.post(origin + "/api/agent/jobs", headers=headers, json={})
+            blocked = await c.post(origin + "/api/booking-requests", headers=headers, json={})
             assert blocked.status_code == 503
-            existing = await c.get(origin + "/api/agent/jobs", headers=headers)
+            existing = await c.get(origin + "/api/booking-requests", headers=headers)
             assert existing.status_code == 200
         finally:
             await publish(original)

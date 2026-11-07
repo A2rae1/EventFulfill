@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-PROJECT = os.environ.get("E2E_COMPOSE_PROJECT", "internship-projects")
+PROJECT = os.environ.get("E2E_COMPOSE_PROJECT", "eventfulfill")
 if not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,40}", PROJECT):
     raise ValueError("Invalid explicit project name")
 DOCKER = Path(os.environ["LOCALAPPDATA"]) / "Programs/DockerDesktop/resources/bin/docker.exe"

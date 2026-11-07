@@ -1,4 +1,4 @@
-name: internship-projects
+name: eventfulfill
 services:
   mysql:
     image: mysql:8.4.9

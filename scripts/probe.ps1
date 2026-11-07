@@ -1,4 +1,4 @@
-param([ValidateSet('event_lifecycle_probe','redis_outage_probe','load_probe','mysql_diagnostics','jobs_probe','governance_probe','jvm_diagnostics','k8s_probe')][string]$Probe='event_lifecycle_probe',[ValidatePattern('^[a-z0-9][a-z0-9_-]{0,40}$')][string]$ProjectName='internship-projects')
+param([ValidateSet('event_lifecycle_probe','redis_outage_probe','load_probe','mysql_diagnostics','jobs_probe','governance_probe','jvm_diagnostics','k8s_probe')][string]$Probe='event_lifecycle_probe',[ValidatePattern('^[a-z0-9][a-z0-9_-]{0,40}$')][string]$ProjectName='eventfulfill')
 $ErrorActionPreference='Stop'
 $workspace=Split-Path -Parent $PSScriptRoot
 $env:E2E_COMPOSE_PROJECT=$ProjectName

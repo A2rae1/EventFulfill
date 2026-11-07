@@ -44,7 +44,7 @@ async def main():
                 data={
                     "dataId": "gateway-policy.properties",
                     "groupName": "PROJECT",
-                    "content": "agent_admission_enabled=true\n",
+                    "content": "booking_admission_enabled=true\n",
                     "type": "properties",
                 },
             )

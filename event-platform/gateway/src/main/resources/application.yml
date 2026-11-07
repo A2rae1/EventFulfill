@@ -21,7 +21,6 @@ management:
         include: health
 gateway:
   java-fallback: ${EVENT_API_URL:http://127.0.0.1:8090}
-  agent-url: ${AGENT_API_URL:http://127.0.0.1:8092}
   nacos-enabled: ${NACOS_ENABLED:false}
 resilience4j:
   circuitbreaker:

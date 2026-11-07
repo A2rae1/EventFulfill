@@ -16,8 +16,8 @@ public class EntryLimits implements GlobalFilter,Ordered {
  public EntryLimits(GatewayPolicy policy){this.policy=policy;}
  public int getOrder(){return -100;}
  public Mono<Void> filter(ServerWebExchange exchange,GatewayFilterChain chain){
-  String path=exchange.getRequest().getPath().value();boolean creation=path.equals("/api/agent/jobs")||path.matches("/api/agent/jobs/[^/]+/followup");
-  if(exchange.getRequest().getMethod()==HttpMethod.POST&&creation&&!policy.agentAdmission.get())return reject(exchange,503,"新调研受理暂时关闭，已有任务仍可查询");
+  String path=exchange.getRequest().getPath().value();boolean creation=path.equals("/api/booking-requests");
+  if(exchange.getRequest().getMethod()==HttpMethod.POST&&creation&&!policy.bookingAdmission.get())return reject(exchange,503,"新预约受理暂时关闭，已有预约仍可查询");
   Semaphore permits=path.endsWith("/stream")?streams:ordinary;
   if(!permits.tryAcquire())return reject(exchange,429,"入口繁忙，请稍后重试");
   return Mono.defer(()->chain.filter(exchange)).doFinally(signal->permits.release());

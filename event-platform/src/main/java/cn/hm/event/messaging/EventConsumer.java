@@ -8,8 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EventConsumer {
-    private final EventMapper db; private final BookingService booking; private final AgentWakeClient agent;
-    public EventConsumer(EventMapper db,BookingService booking,AgentWakeClient agent) { this.db=db;this.booking=booking;this.agent=agent; }
+    private final EventMapper db; private final BookingService booking;
+    public EventConsumer(EventMapper db,BookingService booking) { this.db=db;this.booking=booking; }
     @Transactional(rollbackFor=Exception.class)
     public void consume(String eventId,String topic,String aggregate,String payload) throws Exception {
         // All business effects for a session follow its row lock. Receipt uniqueness also covers concurrent redelivery.
@@ -17,8 +17,6 @@ public class EventConsumer {
         switch(topic) {
             case "BOOKING_ACCEPTED" -> booking.allocate(payload);
             case "ORDER_DEADLINE" -> booking.expire(aggregate);
-            case "AGENT_JOB_CREATED" -> agent.wake(aggregate);
-            case "AGENT_JOB_CANCELLED" -> agent.cancel(aggregate);
             default -> {
                 if(topic.startsWith("ORDER_")||topic.equals("WAITLIST_JOINED"))
                     db.notify(BookingService.id(),payload,eventId,topic+":"+aggregate,booking.now());

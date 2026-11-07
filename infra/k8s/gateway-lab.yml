@@ -51,7 +51,6 @@ spec:
           env:
             - {name: NACOS_ENABLED, value: 'false'}
             - {name: EVENT_API_URL, value: 'http://127.0.0.1:1'}
-            - {name: AGENT_API_URL, value: 'http://127.0.0.1:1'}
           ports: [{containerPort: 8080}]
           resources:
             requests: {cpu: 100m, memory: 128Mi}
