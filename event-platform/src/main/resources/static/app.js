@@ -177,6 +177,11 @@ createApp({
     sessionTitle(id) {
       return this.sessions.find((s) => s.id === id)?.title || "活动场次";
     },
+    summaryText(summary) {
+      if (summary.status !== "OK") return "暂不可用，请稍后重试";
+      const { requests, waiting, checkedIn } = summary.counts;
+      return `请求 ${requests} / 候补 ${waiting} / 已核验 ${checkedIn}`;
+    },
     async loadSummaries() {
       await this.action(async () => {
         const ids = this.sessions

@@ -145,9 +145,7 @@
                 刷新履约摘要
               </button>
               <p v-for="s in summaries">
-                {{sessionTitle(s.sessionId)}} · {{s.status==='OK'?'请求
-                '+s.counts.requests+' / 候补 '+s.counts.waiting+' / 已核验
-                '+s.counts.checkedIn:'暂不可用，请稍后重试'}}
+                {{sessionTitle(s.sessionId)}} · {{summaryText(s)}}
               </p>
             </article>
             <div class="two-columns">

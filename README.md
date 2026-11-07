@@ -1,45 +1,79 @@
 # EventFulfill
 
-**活动预约与票务履约平台 · Event booking and ticket fulfillment**
+活动预约与票务履约平台，面向技术沙龙、校园活动和企业内部活动，提供活动发布、限额预约、候补递补、确认支付与入场核验的完整流程。
 
-A Java backend project with limited-capacity bookings, FIFO waitlists, confirmation, simulated payment, ticket issuance and authorized one-time check-in.
+## 核心功能
 
-**Stack:** Java17, Spring Boot, MyBatis-Plus, MySQL, Redis/Lua, Redisson, RocketMQ, XXL-JOB. Optional Gateway/Nacos, observability and Kubernetes labs remain included.
+- **活动与场次管理**：配置容量、费用和确认期限，发布活动，查看候补队列及履约摘要。
+- **限额预约与有序候补**：异步处理预约，按 FIFO 分配候补名额，支持取消、到期释放和自动递补。
+- **确认与票据履约**：免费确认、模拟支付、票据签发，以及授权核验员的一次性入场核验。
+- **消息与运营管理**：站内通知、操作审计、消费失败记录及原事件重放。
+- **角色权限**：主办方、参与者、核验员和运维角色，支持按场次授权核验。
 
-## Business and engineering
+## 技术栈
 
-- Session row locks, conditional capacity updates and unique active claims protect allocation across confirmation, cancellation and expiration. MySQL remains authoritative.
-- Transactional Outbox, publisher leases, idempotent consumption and audited dead-letter replay support recoverable asynchronous fulfillment.
-- Cache Aside, Lua admission and Redisson protect hot reads and request admission; expiration compensation promotes eligible waiters.
-- JWT/RBAC, explicit session authorization, JUnit, concurrency/failure probes and OpenTelemetry support validation and diagnosis.
+| 层次 | 技术 |
+|---|---|
+| 后端 | Java 17、Spring Boot、MyBatis-Plus |
+| 数据与缓存 | MySQL、Redis、Lua、Redisson |
+| 异步处理 | RocketMQ、事务 Outbox、XXL-JOB |
+| 页面 | Vue 3 |
+| 工程工具 | Maven、JUnit、Docker Compose、k6 |
+| 服务治理与观测 | Spring Cloud Gateway、Nacos、Resilience4j、OpenTelemetry、Prometheus、Grafana |
 
-## Layout
+## 业务流程
 
-`event-platform/`: Java source, tests, Gateway and Vue demo. `infra/`: Java middleware, scheduler/governance/observability labs. `tools/probes/`: optional Java operational probes written in Python. `scripts/`: Java build, test and runtime entry points.
+```mermaid
+flowchart LR
+    A[发布活动] --> B[提交预约]
+    B --> C{名额分配}
+    C --> D[暂留名额]
+    C --> E[FIFO候补]
+    D --> F[确认或模拟支付]
+    F --> G[签发票据]
+    G --> H[授权核验入场]
+    D --> I[取消或到期]
+    I --> E
+    E --> D
+```
 
-## Verify and run
+场次行锁、条件更新和唯一约束维护容量与预约状态。业务变更与 Outbox 在同一事务提交，消息消费通过收据实现幂等；Redis 承担展示缓存、热点访问和请求准入，后台任务处理到期与补偿。
 
-PowerShell7, JDK17+ and Maven are required for default verification. Docker Desktop is needed for real middleware, and Python/uv only for optional operational probes.
+## 快速开始
+
+准备 PowerShell 7、JDK 17+、Maven、Node.js 和 Docker Desktop。
 
 ```powershell
-./scripts/verify.ps1
 ./scripts/init-local.ps1
+./scripts/verify.ps1
 ./scripts/apps-build.ps1
 ./scripts/apps-start.ps1
-# http://127.0.0.1:8090/
+```
+
+访问 **http://127.0.0.1:8090/**。接口文档位于 `/swagger-ui/index.html`。
+
+本地账号：`organizer`（主办方）、`alice` / `bob`（参与者）、`checker`（核验员）、`operator`（运维）。初始化脚本生成的登录密码位于 `infra/.env` 的 `EVENT_DEMO_PASSWORD`。
+
+停止服务：
+
+```powershell
 ./scripts/apps-stop.ps1
 ```
 
-The initializer generates ignored local secrets. Demo users are organizer/alice/bob/checker/operator; use the generated EVENT_DEMO_PASSWORD locally. Do not commit `.env` files. Default tests use H2; real middleware checks are opt-in and skipped checks are not claimed as passed integrations.
+## 项目结构
 
-## Independent application
+```text
+event-platform/          Java业务、页面与测试
+event-platform/gateway/  API网关
+event-platform/load/     k6场景
+infra/                   中间件与部署配置
+scripts/                 初始化、构建、验证与运行入口
+tools/probes/            诊断和流程验证工具
+docs/                    部署、验证与组件说明
+```
 
-Booking runs with its own Java API/UI, identity, MySQL, Redis and RocketMQ. RepoLens is a separate project with its own Java control plane, Python worker and UI; neither project calls the other. Historical Flyway migrations remain immutable for existing databases; unused old Agent tables are not deleted.
+## 文档
 
-Payment is simulated, deployment is local, and performance evidence is not production traffic. Business implementation uses AI coding assistance; upstream frameworks retain their own licenses. See [verification scope](docs/VERIFICATION.md) and [third-party notices](docs/THIRD_PARTY_NOTICES.md).
-
-## Review fixes
-
-See [reliability fixes](docs/REVIEW_FIXES_2026-11-06.md) for current-read transactions, durable approval delivery, generation-separated retries, evidence precision and versioned evaluation metrics. Rebuild old container images before using this source. See [2026-11-07 verification](docs/FINAL_VERIFICATION_2026-11-07.md) for the rebuilt two-checkout acceptance and remaining boundaries.
-
-[Independent-deployment verification](docs/INDEPENDENCE_VERIFICATION_2026-11-07.md) records current tests and remaining boundaries.
+- [部署与配置](docs/INTEGRATION.md)
+- [验证记录](docs/VERIFICATION.md)
+- [第三方组件与许可](docs/THIRD_PARTY_NOTICES.md)
